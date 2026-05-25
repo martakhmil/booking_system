@@ -815,7 +815,7 @@ for(auto x:allBookings){
 
     crow::SimpleApp app;
 
-    CROW_ROUTE(app,"/<path>")
+    CROW_ROUTE(app,"/<path..>")
 .methods("OPTIONS"_method)
 ([](string path){
 
