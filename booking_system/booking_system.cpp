@@ -815,9 +815,9 @@ for(auto x:allBookings){
 
     crow::SimpleApp app;
 
-    CROW_ROUTE(app,"/<path..>")
+    CROW_ROUTE(app,"/<path>")
 .methods("OPTIONS"_method)
-([](string){
+([](string path){
 
     crow::response res;
 
@@ -829,10 +829,16 @@ for(auto x:allBookings){
 });
 
     CROW_ROUTE(app,"/")
-    ([](){
+([](){
 
-        return "booking system api";
-    });
+    crow::response res(
+        "booking system api"
+    );
+
+    addCors(res);
+
+    return res;
+});
 
     CROW_ROUTE(app,"/resources")
     ([&items,&sorter](){
