@@ -760,6 +760,12 @@ void runTests(){
     cout<<"усі тести пройдені\n\n";
 }
 
+void addCors(crow::response& res){
+    res.add_header("Access-Control-Allow-Origin","*");
+    res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
+    res.add_header("Access-Control-Allow-Headers","Content-Type");
+}
+
 int main(){
 
 #ifdef _WIN32
@@ -814,7 +820,7 @@ for(auto x:allBookings){
 ([](string path){
 
     crow::response res;
-
+addCors(res);
     res.code=200;
 
     res.add_header(
@@ -866,7 +872,7 @@ for(auto x:allBookings){
 
         crow::response res(result);
 
-
+addCors(res);
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -904,7 +910,7 @@ return res;
 
        crow::response res(result);
 
-
+addCors(res);
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -926,7 +932,7 @@ return res;
                 400,
                 "invalid json"
             );
-            
+            addCors(res);
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -951,7 +957,7 @@ return res;
                 404,
                 "resource not found"
             );
-            
+           addCors(res); 
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -964,7 +970,7 @@ return res;
                 400,
                 "resource busy"
             );
-           
+         addCors(res);  
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -985,7 +991,7 @@ return res;
                 200,
                 "success"
             );
-           
+           addCors(res);
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -996,7 +1002,7 @@ return res;
             400,
             "booking failed"
         );
-        
+        addCors(res);
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -1018,7 +1024,7 @@ return res;
                 400,
                 "invalid json"
             );
-           
+        addCors(res);   
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -1039,7 +1045,7 @@ return res;
                 400,
                 "invalid price"
             );
-           
+        addCors(res);   
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -1061,7 +1067,7 @@ return res;
             200,
             "room added"
         );
-       
+       addCors(res);
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -1083,7 +1089,7 @@ return res;
                 400,
                 "invalid json"
             );
-           
+          addCors(res); 
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -1104,7 +1110,7 @@ return res;
                 400,
                 "invalid price"
             );
-           
+           addCors(res);
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -1126,7 +1132,7 @@ return res;
             200,
             "table added"
         );
-       
+       addCors(res);
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -1146,7 +1152,7 @@ return res;
             200,
             "deleted"
         );
-       
+       addCors(res);
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -1165,7 +1171,7 @@ return res;
             404,
             "resource not found"
         );
-       
+       addCors(res);
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -1185,7 +1191,7 @@ return res;
 
     crow::response res(x);
 
-
+addCors(res);
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -1220,7 +1226,7 @@ CROW_ROUTE(app,"/bookings/<int>")
 
             crow::response res(r);
 
-
+addCors(res);
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -1232,7 +1238,7 @@ return res;
         404,
         "booking not found"
     );
-   
+   addCors(res);
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -1251,7 +1257,7 @@ CROW_ROUTE(app,"/booking/<int>")
             400,
             "invalid json"
         );
-    
+    addCors(res);
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -1282,7 +1288,7 @@ return res;
             404,
             "booking not found"
         );
-     
+     addCors(res);
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -1308,7 +1314,7 @@ return res;
         200,
         "updated"
     );
-   
+   addCors(res);
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -1327,7 +1333,7 @@ CROW_ROUTE(app,"/resources/<int>")
             404,
             "resource not found"
         );
-    
+    addCors(res);
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -1348,7 +1354,7 @@ crow::response res(
     200,
     "resource deleted"
 );
-
+addCors(res);
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -1368,7 +1374,7 @@ CROW_ROUTE(app,"/resources/<int>")
             400,
             "invalid json"
         );
- 
+ addCors(res);
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -1381,7 +1387,7 @@ return res;
        crow::response res(
             404,
             "resource not found");
-  
+  addCors(res);
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -1394,6 +1400,7 @@ return res;
         crow::response res(
             400,
             "invalid price");
+            addCors(res);
     
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
@@ -1442,7 +1449,7 @@ return res;
         .addResource( oldId,"table", price,  free?1:0,to_string(seats) );
     }
     crow::response res( 200, "resource updated" );
-   
+   addCors(res);
 res.add_header("Access-Control-Allow-Origin","*");
 res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
 res.add_header("Access-Control-Allow-Headers","Content-Type");
@@ -1453,6 +1460,7 @@ CROW_ROUTE(app,"/swagger")
 ([](){
 
     crow::response res;
+    addCors(res);
 
     res.code=200;
 
@@ -1507,8 +1515,15 @@ dom_id:'#swagger-ui'
 
 CROW_ROUTE(app,"/swagger.json")
 ([](){
+crow::response res;
 
-return crow::response(R"(
+    addCors(res);
+
+    res.set_header(
+        "Content-Type",
+        "application/json"
+    );
+res.body=R"(
 
 {
   "openapi":"3.0.0",
@@ -1940,6 +1955,7 @@ return crow::response(R"(
 }
 
 )");
+  return res;
 });
 
 
