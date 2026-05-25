@@ -764,6 +764,7 @@ void addCors(crow::response& res){
     res.add_header("Access-Control-Allow-Origin","*");
     res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
     res.add_header("Access-Control-Allow-Headers","Content-Type");
+    res.add_header("Access-Control-Max-Age", "3600");
 }
 
 int main(){
@@ -1112,64 +1113,155 @@ return res;
 
 return res;
     });
-CROW_ROUTE(app,"/booking/<int>")
-.methods("OPTIONS"_method)
-([](int id){
-    crow::response res;
-    addCors(res);
-    return res;
-});
-    CROW_ROUTE(app,"/booking/<int>")
-    .methods("DELETE"_method)
 
-    ([](int id){
+    CROW_ROUTE(app,"/booking/<int>")
+.methods("OPTIONS"_method,"DELETE"_method,"PUT"_method)
+([&](const crow::request& req,int id){
+
+    if(req.method==crow::HTTPMethod::Options){
+        crow::response res(204);
+        addCors(res);
+        return res;
+    }
+
+    if(req.method==crow::HTTPMethod::Delete){
 
         SQLiteBookingRepository::
         getInstance()
         .removeById(id);
 
-         crow::response res(
-            200,
-            "deleted"
-        );
-       addCors(res);
-
-return res;
-    });
-
-    CROW_ROUTE(app,"/resources/<int>")
-([&items](int id){
-
-    int idx=
-    findResIdx(items,id);
-
-    if(idx==-1){
-
-        crow::response res(
-            404,
-            "resource not found"
-        );
-       addCors(res);
-
-return res;
+        crow::response res(200,"deleted");
+        addCors(res);
+        return res;
     }
 
-    crow::json::wvalue x;
+    // PUT
+    auto body=crow::json::load(req.body);
 
-    x["id"]=
-    items[idx]->getId();
+    if(!body){
+        crow::response res(400,"invalid json");
+        addCors(res);
+        return res;
+    }
 
-    x["info"]=
-    items[idx]->info();
+    string client=body["client"].s();
+    string date=body["date"].s();
 
-    x["free"]=
-    items[idx]->isFree();
+    auto all=SQLiteBookingRepository::
+    getInstance().getAll();
 
-    crow::response res(x);
+    int resourceId=-1;
 
-addCors(res);
+    for(auto x:all){
+        if(x.getBookingId()==id){
+            resourceId=x.getResourceId();
+        }
+    }
 
-return res;
+    if(resourceId==-1){
+        crow::response res(404,"booking not found");
+        addCors(res);
+        return res;
+    }
+
+    SQLiteBookingRepository::getInstance().removeById(id);
+    SQLiteBookingRepository::getInstance().add(
+        Booking(id,resourceId,client,date)
+    );
+    SQLiteBookingRepository::getInstance().updateFree(resourceId,0);
+
+    crow::response res(200,"updated");
+    addCors(res);
+    return res;
+});
+
+    CROW_ROUTE(app,"/resources/<int>")
+.methods("GET"_method,"OPTIONS"_method,"DELETE"_method,"PUT"_method)
+([&items](const crow::request& req,int id){
+
+    if(req.method==crow::HTTPMethod::Options){
+        crow::response res(204);
+        addCors(res);
+        return res;
+    }
+
+    if(req.method==crow::HTTPMethod::Get){
+        int idx=findResIdx(items,id);
+        if(idx==-1){
+            crow::response res(404,"resource not found");
+            addCors(res);
+            return res;
+        }
+        crow::json::wvalue x;
+        x["id"]=items[idx]->getId();
+        x["info"]=items[idx]->info();
+        x["free"]=items[idx]->isFree();
+        crow::response res(x);
+        addCors(res);
+        return res;
+    }
+
+    if(req.method==crow::HTTPMethod::Delete){
+        int idx=findResIdx(items,id);
+        if(idx==-1){
+            crow::response res(404,"resource not found");
+            addCors(res);
+            return res;
+        }
+        items.erase(items.begin()+idx);
+        SQLiteBookingRepository::getInstance().deleteBookingsByResource(id);
+        SQLiteBookingRepository::getInstance().deleteResource(id);
+        crow::response res(200,"resource deleted");
+        addCors(res);
+        return res;
+    }
+
+    // PUT
+    auto body=crow::json::load(req.body);
+    if(!body){
+        crow::response res(400,"invalid json");
+        addCors(res);
+        return res;
+    }
+
+    int idx=findResIdx(items,id);
+    if(idx==-1){
+        crow::response res(404,"resource not found");
+        addCors(res);
+        return res;
+    }
+
+    double price=body["price"].d();
+    if(!BookingSystem::Validator::isValidPrice(price)){
+        crow::response res(400,"invalid price");
+        addCors(res);
+        return res;
+    }
+
+    bool isRoom=dynamic_cast<HotelRoom*>(items[idx].get());
+    int oldId=items[idx]->getId();
+    bool free=items[idx]->isFree();
+    items.erase(items.begin()+idx);
+
+    if(isRoom){
+        int type=body["type"].i();
+        items.push_back(ResourceFactory::createRoom(
+            oldId,type==1?RoomType::STANDARD:RoomType::LUX,price));
+        SQLiteBookingRepository::getInstance().deleteResource(oldId);
+        SQLiteBookingRepository::getInstance().addResource(
+            oldId,"room",price,free?1:0,type==1?"standard":"lux");
+    }
+    else{
+        int seats=body["seats"].i();
+        items.push_back(ResourceFactory::createTable(oldId,seats,price));
+        SQLiteBookingRepository::getInstance().deleteResource(oldId);
+        SQLiteBookingRepository::getInstance().addResource(
+            oldId,"table",price,free?1:0,to_string(seats));
+    }
+
+    crow::response res(200,"resource updated");
+    addCors(res);
+    return res;
 });
 
 CROW_ROUTE(app,"/bookings/<int>")
@@ -1215,204 +1307,11 @@ return res;
 return res;
 });
 
-CROW_ROUTE(app,"/booking/<int>")
-.methods("PUT"_method)
 
-([&](const crow::request& req,int id){
 
-    auto body= crow::json::load(req.body);
 
-    if(!body){
-         crow::response res(
-            400,
-            "invalid json"
-        );
-    addCors(res);
 
-return res;
-    }
 
-    string client=body["client"].s();
-
-    string date=body["date"].s();
-
-    auto all=
-    SQLiteBookingRepository::
-    getInstance()
-    .getAll();
-
-    int resourceId=-1;
-
-    for(auto x:all){
-
-        if(x.getBookingId()==id){
-            resourceId=
-            x.getResourceId();
-        }
-    }
-
-    if(resourceId==-1){
-        crow::response res(
-            404,
-            "booking not found"
-        );
-     addCors(res);
-
-return res;
-    }
-
-    SQLiteBookingRepository::
-    getInstance()
-    .removeById(id);
-
-    SQLiteBookingRepository::
-    getInstance()
-    .add(
-
-         Booking(id, resourceId, client,date )
-    );
-
-    SQLiteBookingRepository::
-    getInstance()
-    .updateFree(resourceId,0);
-
- crow::response res(
-        200,
-        "updated"
-    );
-   addCors(res);
-
-return res;
-});
-CROW_ROUTE(app,"/resources/<int>")
-.methods("OPTIONS"_method)
-([](int id){
-    crow::response res;
-    addCors(res);
-    return res;
-});
-CROW_ROUTE(app,"/resources/<int>")
-.methods("DELETE"_method)
-
-([&items](int id){
-
-    int idx=findResIdx(items,id);
-
-    if(idx==-1){
-        crow::response res(
-            404,
-            "resource not found"
-        );
-    addCors(res);
-
-return res;
-    }
-
-    items.erase(items.begin()+idx);
-
-SQLiteBookingRepository::
-getInstance()
-.deleteBookingsByResource(id);
-
-SQLiteBookingRepository::
-getInstance()
-.deleteResource(id);
-
-crow::response res(
-    200,
-    "resource deleted"
-);
-addCors(res);
-
-return res;
-});
-
-CROW_ROUTE(app,"/resources/<int>")
-.methods("PUT"_method)
-
-([&items]
-(const crow::request& req,int id){
-
-    auto body=crow::json::load(req.body);
-
-    if(!body){
-         crow::response res(
-            400,
-            "invalid json"
-        );
- addCors(res);
-
-return res;
-    }
-
-    int idx=findResIdx(items,id);
-
-    if(idx==-1){
-       crow::response res(
-            404,
-            "resource not found");
-  addCors(res);
-
-return res;
-    }
-
-    double price=body["price"].d();
-
-    if(!BookingSystem::Validator::isValidPrice(price)){
-        crow::response res(
-            400,
-            "invalid price");
-            addCors(res);
-    
-
-return res;
-    }
-
-    bool room=dynamic_cast<HotelRoom*>(items[idx].get());
-
-    int oldId=items[idx]->getId();
-
-    bool free=items[idx]->isFree();
-
-    items.erase(items.begin()+idx);
-
-    if(room){
-
-        int type=body["type"].i();
-
-        items.push_back(
-            ResourceFactory::
-            createRoom( oldId, type==1 ?RoomType::STANDARD:RoomType::LUX, price )
-        );
-
-        SQLiteBookingRepository::
-        getInstance()
-        .deleteResource(oldId);
-
-        SQLiteBookingRepository::
-        getInstance()
-        .addResource( oldId,  "room", price, free?1:0, type==1 ?"standard":"lux" );
-    }
-
-    else{
-        int seats=
-        body["seats"].i();
-
-        items.push_back(ResourceFactory::createTable(oldId, seats, price ));
-
-        SQLiteBookingRepository::
-        getInstance()
-        .deleteResource(oldId);
-
-        SQLiteBookingRepository::
-        getInstance()
-        .addResource( oldId,"table", price,  free?1:0,to_string(seats) );
-    }
-    crow::response res( 200, "resource updated" );
-   addCors(res);
-
-return res;
-});
 
 CROW_ROUTE(app,"/swagger")
 ([](){
