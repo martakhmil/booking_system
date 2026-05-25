@@ -815,15 +815,15 @@ for(auto x:allBookings){
 
     crow::SimpleApp app;
 
-    CROW_ROUTE(app,"/<path>")
+    CROW_ROUTE(app,"/<path..>")
 .methods("OPTIONS"_method)
-([](string path){
+([](string){
 
     crow::response res;
-addCors(res);
-    res.code=200;
 
-  
+    addCors(res);
+
+    res.code=200;
 
     return res;
 });
