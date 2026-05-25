@@ -1588,6 +1588,92 @@ return crow::response(R"(
             "description":"Resource not found"
           }
         }
+      },
+      "put":{
+
+        "summary":"Update resource",
+
+        "parameters":[
+
+          {
+            "name":"id",
+            "in":"path",
+            "required":true,
+
+            "schema":{
+              "type":"integer"
+            }
+          }
+        ],
+
+        "requestBody":{
+
+          "required":true,
+
+          "content":{
+
+            "application/json":{
+
+              "schema":{
+
+                "type":"object",
+
+                "properties":{
+
+                  "price":{
+                    "type":"number"
+                  },
+
+                  "type":{
+                    "type":"integer"
+                  },
+
+                  "seats":{
+                    "type":"integer"
+                  }
+                }
+              },
+
+              "example":{
+
+                "price":3000,
+                "type":1
+              }
+            }
+          }
+        },
+
+        "responses":{
+
+          "200":{
+            "description":"Resource updated"
+          }
+        }
+      },
+
+      "delete":{
+
+        "summary":"Delete resource",
+
+        "parameters":[
+
+          {
+            "name":"id",
+            "in":"path",
+            "required":true,
+
+            "schema":{
+              "type":"integer"
+            }
+          }
+        ],
+
+        "responses":{
+
+          "200":{
+            "description":"Resource deleted"
+          }
+        }
       }
     },
 
@@ -1875,95 +1961,7 @@ return crow::response(R"(
       }
     },
 
-    "/resources/{id}":{
-
-      "put":{
-
-        "summary":"Update resource",
-
-        "parameters":[
-
-          {
-            "name":"id",
-            "in":"path",
-            "required":true,
-
-            "schema":{
-              "type":"integer"
-            }
-          }
-        ],
-
-        "requestBody":{
-
-          "required":true,
-
-          "content":{
-
-            "application/json":{
-
-              "schema":{
-
-                "type":"object",
-
-                "properties":{
-
-                  "price":{
-                    "type":"number"
-                  },
-
-                  "type":{
-                    "type":"integer"
-                  },
-
-                  "seats":{
-                    "type":"integer"
-                  }
-                }
-              },
-
-              "example":{
-
-                "price":3000,
-                "type":1
-              }
-            }
-          }
-        },
-
-        "responses":{
-
-          "200":{
-            "description":"Resource updated"
-          }
-        }
-      },
-
-      "delete":{
-
-        "summary":"Delete resource",
-
-        "parameters":[
-
-          {
-            "name":"id",
-            "in":"path",
-            "required":true,
-
-            "schema":{
-              "type":"integer"
-            }
-          }
-        ],
-
-        "responses":{
-
-          "200":{
-            "description":"Resource deleted"
-          }
-        }
-      }
-    }
+    
   }
 }
 
