@@ -823,20 +823,7 @@ for(auto x:allBookings){
 addCors(res);
     res.code=200;
 
-    res.add_header(
-        "Access-Control-Allow-Origin",
-        "*"
-    );
-
-    res.add_header(
-        "Access-Control-Allow-Methods",
-        "GET, POST, PUT, DELETE, OPTIONS"
-    );
-
-    res.add_header(
-        "Access-Control-Allow-Headers",
-        "Content-Type"
-    );
+  
 
     return res;
 });
@@ -873,9 +860,7 @@ addCors(res);
         crow::response res(result);
 
 addCors(res);
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
     });
 
@@ -911,9 +896,7 @@ return res;
        crow::response res(result);
 
 addCors(res);
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
     });
 
@@ -933,9 +916,7 @@ return res;
                 "invalid json"
             );
             addCors(res);
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
         }
 
@@ -958,9 +939,7 @@ return res;
                 "resource not found"
             );
            addCors(res); 
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
         }
 
@@ -971,9 +950,7 @@ return res;
                 "resource busy"
             );
          addCors(res);  
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
         }
 
@@ -992,9 +969,7 @@ return res;
                 "success"
             );
            addCors(res);
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
         }
 
@@ -1003,9 +978,7 @@ return res;
             "booking failed"
         );
         addCors(res);
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
     });
 
@@ -1025,9 +998,7 @@ return res;
                 "invalid json"
             );
         addCors(res);   
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
         }
 
@@ -1046,9 +1017,7 @@ return res;
                 "invalid price"
             );
         addCors(res);   
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
         }
 
@@ -1068,9 +1037,7 @@ return res;
             "room added"
         );
        addCors(res);
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
     });
 
@@ -1090,9 +1057,7 @@ return res;
                 "invalid json"
             );
           addCors(res); 
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
         }
 
@@ -1111,9 +1076,7 @@ return res;
                 "invalid price"
             );
            addCors(res);
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
         }
 
@@ -1133,9 +1096,7 @@ return res;
             "table added"
         );
        addCors(res);
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
     });
 
@@ -1153,9 +1114,7 @@ return res;
             "deleted"
         );
        addCors(res);
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
     });
 
@@ -1172,9 +1131,7 @@ return res;
             "resource not found"
         );
        addCors(res);
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
     }
 
@@ -1192,9 +1149,7 @@ return res;
     crow::response res(x);
 
 addCors(res);
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
 });
 
@@ -1227,9 +1182,7 @@ CROW_ROUTE(app,"/bookings/<int>")
             crow::response res(r);
 
 addCors(res);
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
         }
     }
@@ -1239,9 +1192,7 @@ return res;
         "booking not found"
     );
    addCors(res);
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
 });
 
@@ -1258,9 +1209,7 @@ CROW_ROUTE(app,"/booking/<int>")
             "invalid json"
         );
     addCors(res);
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
     }
 
@@ -1289,9 +1238,7 @@ return res;
             "booking not found"
         );
      addCors(res);
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
     }
 
@@ -1315,9 +1262,7 @@ return res;
         "updated"
     );
    addCors(res);
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
 });
 
@@ -1334,9 +1279,7 @@ CROW_ROUTE(app,"/resources/<int>")
             "resource not found"
         );
     addCors(res);
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
     }
 
@@ -1355,9 +1298,7 @@ crow::response res(
     "resource deleted"
 );
 addCors(res);
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
 });
 
@@ -1375,9 +1316,7 @@ CROW_ROUTE(app,"/resources/<int>")
             "invalid json"
         );
  addCors(res);
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
     }
 
@@ -1388,9 +1327,7 @@ return res;
             404,
             "resource not found");
   addCors(res);
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
     }
 
@@ -1402,9 +1339,7 @@ return res;
             "invalid price");
             addCors(res);
     
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
     }
 
@@ -1450,9 +1385,7 @@ return res;
     }
     crow::response res( 200, "resource updated" );
    addCors(res);
-res.add_header("Access-Control-Allow-Origin","*");
-res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-res.add_header("Access-Control-Allow-Headers","Content-Type");
+
 return res;
 });
 
