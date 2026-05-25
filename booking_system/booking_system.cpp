@@ -1233,7 +1233,14 @@ CROW_ROUTE(app,"/bookings/<int>")
             r["date"]=
             x.getDate();
 
-            return crow::response(r);
+            crow::response res(r);
+
+res.add_header(
+"Access-Control-Allow-Origin",
+"*"
+);
+
+return res;
         }
     }
 
