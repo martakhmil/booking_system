@@ -809,6 +809,32 @@ for(auto x:allBookings){
 
     crow::SimpleApp app;
 
+    CROW_ROUTE(app,"/<path>")
+.methods("OPTIONS"_method)
+([](){
+
+    crow::response res;
+
+    res.code=200;
+
+    res.add_header(
+        "Access-Control-Allow-Origin",
+        "*"
+    );
+
+    res.add_header(
+        "Access-Control-Allow-Methods",
+        "GET, POST, PUT, DELETE, OPTIONS"
+    );
+
+    res.add_header(
+        "Access-Control-Allow-Headers",
+        "Content-Type"
+    );
+
+    return res;
+});
+
     CROW_ROUTE(app,"/")
     ([](){
 
