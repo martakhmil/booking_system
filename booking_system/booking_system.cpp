@@ -997,81 +997,136 @@ return res;
 return res;
     });
 CROW_ROUTE(app,"/add-room")
-.methods("OPTIONS"_method,"POST"_method)
-([&items,&nxtR](const crow::request& req){
+.methods("OPTIONS"_method)
+([](){
 
-    if(req.method==crow::HTTPMethod::Options){
-        crow::response res(204);
-        addCors(res);
-        return res;
-    }
+    crow::response res(204);
+
+    addCors(res);
+
+    return res;
+});
+
+CROW_ROUTE(app,"/add-room")
+.methods("POST"_method)
+([&items,&nxtR](const crow::request& req){
 
     auto body=crow::json::load(req.body);
 
     if(!body){
+
         crow::response res(400,"invalid json");
+
         addCors(res);
+
         return res;
     }
 
     int type=body["type"].i();
+
     double price=body["price"].d();
 
     if(!BookingSystem::Validator::isValidPrice(price)){
+
         crow::response res(400,"invalid price");
+
         addCors(res);
+
         return res;
     }
 
-    items.push_back(ResourceFactory::createRoom(
-        nxtR,type==1?RoomType::STANDARD:RoomType::LUX,price));
+    items.push_back(
+        ResourceFactory::createRoom(
+            nxtR,
+            type==1
+            ?RoomType::STANDARD
+            :RoomType::LUX,
+            price
+        )
+    );
 
     SQLiteBookingRepository::getInstance()
-    .addResource(nxtR,"room",price,1,type==1?"standard":"lux");
+    .addResource(
+        nxtR,
+        "room",
+        price,
+        1,
+        type==1
+        ?"standard"
+        :"lux"
+    );
 
     nxtR++;
 
     crow::response res(200,"room added");
+
     addCors(res);
+
     return res;
 });
 
 CROW_ROUTE(app,"/add-table")
-.methods("OPTIONS"_method,"POST"_method)
-([&items,&nxtR](const crow::request& req){
+.methods("OPTIONS"_method)
+([](){
 
-    if(req.method==crow::HTTPMethod::Options){
-        crow::response res(204);
-        addCors(res);
-        return res;
-    }
+    crow::response res(204);
+
+    addCors(res);
+
+    return res;
+});
+
+CROW_ROUTE(app,"/add-table")
+.methods("POST"_method)
+([&items,&nxtR](const crow::request& req){
 
     auto body=crow::json::load(req.body);
 
     if(!body){
+
         crow::response res(400,"invalid json");
+
         addCors(res);
+
         return res;
     }
 
     int seats=body["seats"].i();
+
     double price=body["price"].d();
 
     if(!BookingSystem::Validator::isValidPrice(price)){
+
         crow::response res(400,"invalid price");
+
         addCors(res);
+
         return res;
     }
 
-    items.push_back(ResourceFactory::createTable(nxtR,seats,price));
+    items.push_back(
+        ResourceFactory::createTable(
+            nxtR,
+            seats,
+            price
+        )
+    );
 
     SQLiteBookingRepository::getInstance()
-    .addResource(nxtR,"table",price,1,to_string(seats));
+    .addResource(
+        nxtR,
+        "table",
+        price,
+        1,
+        to_string(seats)
+    );
 
     nxtR++;
 
     crow::response res(200,"table added");
+
     addCors(res);
+
     return res;
 });
 
