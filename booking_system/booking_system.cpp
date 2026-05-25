@@ -811,7 +811,7 @@ for(auto x:allBookings){
 
     CROW_ROUTE(app,"/<path>")
 .methods("OPTIONS"_method)
-([](){
+([](string path){
 
     crow::response res;
 
