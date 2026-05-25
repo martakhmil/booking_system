@@ -15,7 +15,7 @@ Trash2,
 ArrowLeft
 }from "lucide-react";
 
-const API="https://booking-api-i75p.onrender.com";
+const API="https://bookingsystem-production-7556.up.railway.app";
 
 const resourceImages=[
 room1,
