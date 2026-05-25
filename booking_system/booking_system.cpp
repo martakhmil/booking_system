@@ -899,7 +899,13 @@ addCors(res);
 
 return res;
     });
-
+CROW_ROUTE(app,"/book")
+.methods("OPTIONS"_method)
+([](){
+    crow::response res;
+    addCors(res);
+    return res;
+});
     CROW_ROUTE(app,"/book")
     .methods("POST"_method)
 
@@ -981,7 +987,13 @@ return res;
 
 return res;
     });
-
+CROW_ROUTE(app,"/add-room")
+.methods("OPTIONS"_method)
+([](){
+    crow::response res;
+    addCors(res);
+    return res;
+});
     CROW_ROUTE(app,"/add-room")
     .methods("POST"_method)
 
@@ -1040,7 +1052,13 @@ return res;
 
 return res;
     });
-
+CROW_ROUTE(app,"/add-table")
+.methods("OPTIONS"_method)
+([](){
+    crow::response res;
+    addCors(res);
+    return res;
+});
     CROW_ROUTE(app,"/add-table")
     .methods("POST"_method)
 
@@ -1099,7 +1117,13 @@ return res;
 
 return res;
     });
-
+CROW_ROUTE(app,"/booking/<int>")
+.methods("OPTIONS"_method)
+([](int id){
+    crow::response res;
+    addCors(res);
+    return res;
+});
     CROW_ROUTE(app,"/booking/<int>")
     .methods("DELETE"_method)
 
@@ -1265,7 +1289,13 @@ return res;
 
 return res;
 });
-
+CROW_ROUTE(app,"/resources/<int>")
+.methods("OPTIONS"_method)
+([](int id){
+    crow::response res;
+    addCors(res);
+    return res;
+});
 CROW_ROUTE(app,"/resources/<int>")
 .methods("DELETE"_method)
 
