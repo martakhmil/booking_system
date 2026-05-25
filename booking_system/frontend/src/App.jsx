@@ -15,7 +15,7 @@ Trash2,
 ArrowLeft
 }from "lucide-react";
 
-const API="http://127.0.0.1:18080";
+const API="https://booking-api-i75p.onrender.com";
 
 const resourceImages=[
 room1,
