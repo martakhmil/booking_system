@@ -813,8 +813,27 @@ for(auto x:allBookings){
     );
 }
 
+struct CorsMiddleware {
+    struct context {};
 
-    crow::SimpleApp app;
+    void before_handle(crow::request& req, crow::response& res, context&) {
+        res.add_header("Access-Control-Allow-Origin","*");
+        res.add_header("Access-Control-Allow-Methods","GET,POST,PUT,DELETE,OPTIONS");
+        res.add_header("Access-Control-Allow-Headers","Content-Type");
+        if(req.method==crow::HTTPMethod::Options){
+            res.code=204;
+            res.end();
+        }
+    }
+
+    void after_handle(crow::request&, crow::response& res, context&) {
+        res.add_header("Access-Control-Allow-Origin","*");
+        res.add_header("Access-Control-Allow-Methods","GET,POST,PUT,DELETE,OPTIONS");
+        res.add_header("Access-Control-Allow-Headers","Content-Type");
+    }
+};
+
+    crow::App<CorsMiddleware> app;
 
     
 
