@@ -813,29 +813,23 @@ for(auto x:allBookings){
     );
 }
 
-struct CorsMiddleware {
-    struct context {};
 
-    void before_handle(crow::request& req, crow::response& res, context&) {
-        res.add_header("Access-Control-Allow-Origin","*");
-        res.add_header("Access-Control-Allow-Methods","GET,POST,PUT,DELETE,OPTIONS");
-        res.add_header("Access-Control-Allow-Headers","Content-Type");
-        if(req.method==crow::HTTPMethod::Options){
-            res.code=204;
-            res.end();
-        }
+
+
+    crow::SimpleApp app;
+
+    CROW_CATCHALL_ROUTE(app)
+([](const crow::request& req, crow::response& res){
+    res.add_header("Access-Control-Allow-Origin","*");
+    res.add_header("Access-Control-Allow-Methods","GET,POST,PUT,DELETE,OPTIONS");
+    res.add_header("Access-Control-Allow-Headers","Content-Type");
+    if(req.method==crow::HTTPMethod::Options){
+        res.code=204;
+    } else {
+        res.code=404;
     }
-
-    void after_handle(crow::request&, crow::response& res, context&) {
-        res.add_header("Access-Control-Allow-Origin","*");
-        res.add_header("Access-Control-Allow-Methods","GET,POST,PUT,DELETE,OPTIONS");
-        res.add_header("Access-Control-Allow-Headers","Content-Type");
-    }
-};
-
-    crow::App<CorsMiddleware> app;
-
-    
+    res.end();
+});
 
     CROW_ROUTE(app,"/")
 ([](){
