@@ -977,7 +977,7 @@ CROW_ROUTE(app,"/add-room")
         return res;
     }
 
-    int type=body["type"].i();
+    int type=(int)body["type"].d();
     double price=body["price"].d();
 
     if(!BookingSystem::Validator::isValidPrice(price)){
@@ -1029,7 +1029,7 @@ CROW_ROUTE(app,"/add-table")
         return res;
     }
 
-    int seats=body["seats"].i();
+    int seats=(int)body["seats"].d();
     double price=body["price"].d();
 
     if(!BookingSystem::Validator::isValidPrice(price)){
