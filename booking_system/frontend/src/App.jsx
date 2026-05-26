@@ -129,43 +129,64 @@ loadBookings();
 }
 
 async function addRoom(){
-  await fetch(`${API}/add-room`,{
+  const priceNum = Number(roomPrice);
+
+  // Перевірка перед відправкою, щоб знати, чи не пусте поле
+  if (isNaN(priceNum) || priceNum <= 0) {
+    alert("Будь ласка, введіть коректну ціну номера (більшу за 0)");
+    return;
+  }
+
+  const response = await fetch(`${API}/add-room`,{
     method:"POST",
     headers:{ "Content-Type":"application/json" },
     body:JSON.stringify({
-      type:Number(roomType),
-      price:Number(roomPrice)
+      type: Number(roomType),
+      price: priceNum
     })
   });
-  setRoomPrice("");
-  setRoomType(1); // скидаємо на стандарт
-  loadResources();
+
+  if (response.ok) {
+    setRoomPrice("");
+    setRoomType(1);
+    loadResources();
+    alert("Кімнату успішно додано!");
+  } else {
+    alert("Сервер відхилив додавання кімнати");
+  }
 }
 
 async function addTable(){
-  await fetch(`${API}/add-table`,{
+  const seatsNum = Number(tableSeats);
+  const priceNum = Number(tablePrice);
+
+  if (isNaN(seatsNum) || seatsNum <= 0 || !Number.isInteger(seatsNum)) {
+    alert("Будь ласка, введіть коректну кількість місць (ціле число більше 0)");
+    return;
+  }
+
+  if (isNaN(priceNum) || priceNum <= 0) {
+    alert("Будь ласка, введіть коректну ціну столика (більшу за 0)");
+    return;
+  }
+
+  const response = await fetch(`${API}/add-table`,{
     method:"POST",
     headers:{ "Content-Type":"application/json" },
     body:JSON.stringify({
-      seats:Number(tableSeats),
-      price:Number(tablePrice)
+      seats: seatsNum,
+      price: priceNum
     })
   });
-  setTableSeats("");
-  setTablePrice(""); // Тепер ціна столика очищається автоматично!
-  loadResources();
-}
 
-async function deleteBooking(id){
-
-await fetch(`${API}/booking/${id}`,{
-
-method:"DELETE"
-
-});
-
-loadBookings();
-loadResources();
+  if (response.ok) {
+    setTableSeats("");
+    setTablePrice("");
+    loadResources();
+    alert("Столик успішно додано!");
+  } else {
+    alert("Сервер відхилив додавання столика");
+  }
 }
 
 async function deleteResource(id){
