@@ -1792,7 +1792,9 @@ res.body=R"(
 });
 
 
-   app.port(18080).concurrency(1).run();
+   const char* port_env = std::getenv("PORT");
+int port = port_env ? std::stoi(port_env) : 18080;
+app.port(port).concurrency(2).run();
 
     return 0;
 }
