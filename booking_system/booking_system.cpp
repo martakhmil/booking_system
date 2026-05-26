@@ -818,11 +818,12 @@ for(auto x:allBookings){
 
     crow::SimpleApp app;
 
-    CROW_CATCHALL_ROUTE(app)
+     CROW_CATCHALL_ROUTE(app)
 ([](const crow::request& req, crow::response& res){
     res.add_header("Access-Control-Allow-Origin","*");
     res.add_header("Access-Control-Allow-Methods","GET,POST,PUT,DELETE,OPTIONS");
     res.add_header("Access-Control-Allow-Headers","Content-Type");
+    res.add_header("Access-Control-Max-Age","3600");
     if(req.method==crow::HTTPMethod::Options){
         res.code=204;
     } else {
@@ -830,6 +831,12 @@ for(auto x:allBookings){
     }
     res.end();
 });
+
+  app.after_handle([](crow::request&, crow::response& res, crow::request::context&){
+        res.add_header("Access-Control-Allow-Origin","*");
+        res.add_header("Access-Control-Allow-Methods","GET,POST,PUT,DELETE,OPTIONS");
+        res.add_header("Access-Control-Allow-Headers","Content-Type");
+    });
 
     CROW_ROUTE(app,"/")
 ([](){
