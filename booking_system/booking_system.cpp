@@ -832,11 +832,7 @@ for(auto x:allBookings){
     res.end();
 });
 
-  app.after_handle([](crow::request&, crow::response& res, crow::request::context&){
-        res.add_header("Access-Control-Allow-Origin","*");
-        res.add_header("Access-Control-Allow-Methods","GET,POST,PUT,DELETE,OPTIONS");
-        res.add_header("Access-Control-Allow-Headers","Content-Type");
-    });
+  
 
     CROW_ROUTE(app,"/")
 ([](){
