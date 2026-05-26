@@ -1783,7 +1783,11 @@ res.body=R"(
 });
 
 
-   app.port(18080).concurrency(2).run();
+   const char* port = getenv("PORT");
+
+int p = port ? stoi(port) : 8080;
+
+app.port(p).concurrency(2).run();
 
     return 0;
 }
