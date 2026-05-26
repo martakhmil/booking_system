@@ -73,7 +73,7 @@ async function loadResources(){
 const res=await fetch(`${API}/resources`);
 const data=await res.json();
 
-const arr=(data || []).map((x,index)=>({
+const arr=Object.values(data || {}).map((x,index)=>({
 
 ...x,
 
@@ -92,7 +92,7 @@ async function loadBookings(){
 const res=await fetch(`${API}/bookings`);
 const data=await res.json();
 
-setBookings(data || []);
+setBookings(Object.values(data || {}));
 }
 
 useEffect(()=>{
