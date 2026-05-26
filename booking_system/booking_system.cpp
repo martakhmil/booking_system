@@ -1009,59 +1009,49 @@ CROW_ROUTE(app,"/add-room")
 
 CROW_ROUTE(app,"/add-room")
 .methods("POST"_method)
-([&items,&nxtR](const crow::request& req){
+([&items](const crow::request& req){ // Змінено: nxtR більше не передаємо по посиланню
 
     auto body=crow::json::load(req.body);
-
     if(!body){
-
         crow::response res(400,"invalid json");
-
         addCors(res);
-
         return res;
     }
 
     int type=body["type"].i();
-
     double price=body["price"].d();
 
     if(!BookingSystem::Validator::isValidPrice(price)){
-
         crow::response res(400,"invalid price");
-
         addCors(res);
-
         return res;
+    }
+
+    // Динамічно вираховуємо новий унікальний ID на основі поточної пам'яті
+    int currentNextId = 1;
+    for(auto& x : items){
+        currentNextId = max(currentNextId, x->getId() + 1);
     }
 
     items.push_back(
         ResourceFactory::createRoom(
-            nxtR,
-            type==1
-            ?RoomType::STANDARD
-            :RoomType::LUX,
+            currentNextId,
+            type==1 ? RoomType::STANDARD : RoomType::LUX,
             price
         )
     );
 
     SQLiteBookingRepository::getInstance()
     .addResource(
-        nxtR,
+        currentNextId,
         "room",
         price,
         1,
-        type==1
-        ?"standard"
-        :"lux"
+        type==1 ? "standard" : "lux"
     );
 
-    nxtR++;
-
     crow::response res(200,"room added");
-
     addCors(res);
-
     return res;
 });
 
@@ -1078,35 +1068,33 @@ CROW_ROUTE(app,"/add-table")
 
 CROW_ROUTE(app,"/add-table")
 .methods("POST"_method)
-([&items,&nxtR](const crow::request& req){
+([&items](const crow::request& req){ // Змінено: nxtR прибрано
 
     auto body=crow::json::load(req.body);
-
     if(!body){
-
         crow::response res(400,"invalid json");
-
         addCors(res);
-
         return res;
     }
 
     int seats=body["seats"].i();
-
     double price=body["price"].d();
 
     if(!BookingSystem::Validator::isValidPrice(price)){
-
         crow::response res(400,"invalid price");
-
         addCors(res);
-
         return res;
+    }
+
+    // Динамічно вираховуємо новий унікальний ID
+    int currentNextId = 1;
+    for(auto& x : items){
+        currentNextId = max(currentNextId, x->getId() + 1);
     }
 
     items.push_back(
         ResourceFactory::createTable(
-            nxtR,
+            currentNextId,
             seats,
             price
         )
@@ -1114,19 +1102,15 @@ CROW_ROUTE(app,"/add-table")
 
     SQLiteBookingRepository::getInstance()
     .addResource(
-        nxtR,
+        currentNextId,
         "table",
         price,
         1,
         to_string(seats)
     );
 
-    nxtR++;
-
     crow::response res(200,"table added");
-
     addCors(res);
-
     return res;
 });
 
@@ -1196,19 +1180,42 @@ CROW_ROUTE(app,"/add-table")
     bool isRoom=dynamic_cast<HotelRoom*>(items[idx].get());
     int oldId=items[idx]->getId();
     bool free=items[idx]->isFree();
-    items.erase(items.begin()+idx);
+
+    // Зберігаємо старі дані клієнта перед оновленням, щоб не втратити їх
+    string oldClient = "", oldDate = "";
+    if(!free) {
+        auto allB = SQLiteBookingRepository::getInstance().getAll();
+        for(auto& b : allB) {
+            if(b.getResourceId() == oldId) {
+                oldClient = b.getClient();
+                oldDate = b.getDate();
+                break;
+            }
+        }
+    }
+
+    // ВИД АЛ ЕНО: items.erase(items.begin()+idx); <- Це викликало crash!
 
     if(isRoom){
         int type=body["type"].i();
-        items.push_back(ResourceFactory::createRoom(
-            oldId,type==1?RoomType::STANDARD:RoomType::LUX,price));
+        auto newRoom = ResourceFactory::createRoom(oldId, type==1?RoomType::STANDARD:RoomType::LUX, price);
+        if(!free) {
+            newRoom->book(oldClient, oldDate); // Повертаємо активне бронювання в пам'ять
+        }
+        items[idx] = move(newRoom); // Безпечно перезаписуємо на тому ж місці
+        
         SQLiteBookingRepository::getInstance().deleteResource(oldId);
         SQLiteBookingRepository::getInstance().addResource(
             oldId,"room",price,free?1:0,type==1?"standard":"lux");
     }
     else{
         int seats=body["seats"].i();
-        items.push_back(ResourceFactory::createTable(oldId,seats,price));
+        auto newTable = ResourceFactory::createTable(oldId, seats, price);
+        if(!free) {
+            newTable->book(oldClient, oldDate); // Повертаємо активне бронювання в пам'ять
+        }
+        items[idx] = move(newTable); // Безпечно перезаписуємо на тому ж місці
+        
         SQLiteBookingRepository::getInstance().deleteResource(oldId);
         SQLiteBookingRepository::getInstance().addResource(
             oldId,"table",price,free?1:0,to_string(seats));
@@ -1219,53 +1226,107 @@ CROW_ROUTE(app,"/add-table")
     return res;
 });
 
-CROW_ROUTE(app,"/bookings/<int>")
-([](int id){
-
-    auto all=
-    SQLiteBookingRepository::
-    getInstance()
-    .getAll();
-
-    for(auto x:all){
-
-        if(x.getBookingId()==id){
-
-            crow::json::wvalue r;
-
-            r["bookingId"]=
-            x.getBookingId();
-
-            r["resourceId"]=
-            x.getResourceId();
-
-            r["client"]=
-            x.getClient();
-
-            r["date"]=
-            x.getDate();
-
-            crow::response res(r);
-
-addCors(res);
-
-return res;
+CROW_ROUTE(app,"/booking/<int>")
+    .methods("OPTIONS"_method, "GET"_method, "PUT"_method, "DELETE"_method)
+    ([&items](const crow::request& req, int id) {
+        if(req.method == crow::HTTPMethod::Options) {
+            crow::response res(204);
+            addCors(res);
+            return res;
         }
-    }
 
-     crow::response res(
-        404,
-        "booking not found"
-    );
-   addCors(res);
+        if(req.method == crow::HTTPMethod::Get) {
+            auto all = SQLiteBookingRepository::getInstance().getAll();
+            for(auto x : all) {
+                if(x.getBookingId() == id) {
+                    crow::json::wvalue r;
+                    r["bookingId"] = x.getBookingId();
+                    r["resourceId"] = x.getResourceId();
+                    r["client"] = x.getClient();
+                    r["date"] = x.getDate();
+                    crow::response res(r);
+                    addCors(res);
+                    return res;
+                }
+            }
+            crow::response res(404, "booking not found");
+            addCors(res);
+            return res;
+        }
 
-return res;
-});
+        if(req.method == crow::HTTPMethod::Delete) {
+            int resId = -1;
+            auto allB = SQLiteBookingRepository::getInstance().getAll();
+            for(auto& b : allB) {
+                if(b.getBookingId() == id) {
+                    resId = b.getResourceId();
+                    break;
+                }
+            }
 
+            // 1. Видаляємо з бази даних (вона сама скине free=1 в таблиці resources)
+            SQLiteBookingRepository::getInstance().removeById(id);
+            
+            // 2. Звільняємо ресурс в оперативній пам'яті без перезапуску сервера
+            if(resId != -1) {
+                int idx = findResIdx(items, resId);
+                if(idx != -1) {
+                    items[idx]->cancel(); 
+                }
+            }
+            
+            crow::response res(200, "booking deleted");
+            addCors(res);
+            return res;
+        }
 
+        if(req.method == crow::HTTPMethod::Put) {
+            auto body = crow::json::load(req.body);
+            if(!body) {
+                crow::response res(400, "invalid json");
+                addCors(res);
+                return res;
+            }
 
+            string newClient = body["client"].s();
+            string newDate = body["date"].s();
 
+            int targetResId = -1;
+            auto allBookingsBefore = SQLiteBookingRepository::getInstance().getAll();
+            for(auto& b : allBookingsBefore) {
+                if(b.getBookingId() == id) {
+                    targetResId = b.getResourceId();
+                    break;
+                }
+            }
 
+            if(targetResId == -1) {
+                crow::response res(404, "booking records not found");
+                addCors(res);
+                return res;
+            }
+
+            // 1. Оновлюємо базу даних безпечно (видаляємо старий запис, пишемо новий з тим же ID)
+            SQLiteBookingRepository::getInstance().removeById(id);
+            SQLiteBookingRepository::getInstance().add(Booking(id, targetResId, newClient, newDate));
+            SQLiteBookingRepository::getInstance().updateFree(targetResId, 0);
+
+            // 2. Оновлюємо оперативну пам'ять (items) точково і безпечно без .clear()
+            int idx = findResIdx(items, targetResId);
+            if(idx != -1) {
+                items[idx]->cancel();          // Скидаємо старі дані клієнта
+                items[idx]->book(newClient, newDate); // Записуємо нові дані оновленого бронювання
+            }
+
+            crow::response res(200, "booking updated");
+            addCors(res);
+            return res;
+        }
+
+        crow::response res(400, "bad request");
+        addCors(res);
+        return res;
+    });
 
 
 CROW_ROUTE(app,"/swagger")
@@ -1771,10 +1832,7 @@ res.body=R"(
 });
 
 
-    app
-.port(18080)
-.concurrency(1)
-.run();
+   app.port(18080).concurrency(1).run();
 
     return 0;
 }

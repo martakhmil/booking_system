@@ -53,7 +53,21 @@ const [editPrice,setEditPrice]=useState("");
 const [editType,setEditType]=useState(1);
 const [editSeats,setEditSeats]=useState("");
 const [editingIsTable,setEditingIsTable]=useState(false);
+// Конвертує 2026-05-26 -> 26.05
+const formatDateToBackend = (dateStr) => {
+  if (!dateStr) return "";
+  const parts = dateStr.split("-");
+  if (parts.length !== 3) return dateStr;
+  return `${parts[2]}.${parts[1]}`;
+};
 
+// Конвертує 26.05 -> 2026-05-26 (підставляє поточний рік)
+const formatDateToFrontend = (dateStr) => {
+  if (!dateStr || !dateStr.includes(".")) return "";
+  const parts = dateStr.split(".");
+  const currentYear = new Date().getFullYear(); // 2026
+  return `${currentYear}-${parts[1]}-${parts[0]}`;
+};
 async function loadResources(){
 
 const res=await fetch(`${API}/resources`);
@@ -94,15 +108,13 @@ await fetch(`${API}/book`,{
 
 method:"POST",
 
-headers:{
-"Content-Type":"application/json"
-},
+headers:{"Content-Type":"application/json"},
 
 body:JSON.stringify({
 
 id:Number(resourceId),
 client,
-date
+date: formatDateToBackend(date)
 
 })
 
@@ -117,52 +129,31 @@ loadBookings();
 }
 
 async function addRoom(){
-
-await fetch(`${API}/add-room`,{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-
-type:Number(roomType),
-price:Number(roomPrice)
-
-})
-
-});
-
-setRoomPrice("");
-
-loadResources();
+  await fetch(`${API}/add-room`,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({
+      type:Number(roomType),
+      price:Number(roomPrice)
+    })
+  });
+  setRoomPrice("");
+  setRoomType(1); // скидаємо на стандарт
+  loadResources();
 }
 
 async function addTable(){
-
-await fetch(`${API}/add-table`,{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-
-seats:Number(tableSeats),
-price:Number(tablePrice)
-
-})
-
-});
-
-setTableSeats("");
-setTablePrice("");
-
-loadResources();
+  await fetch(`${API}/add-table`,{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify({
+      seats:Number(tableSeats),
+      price:Number(tablePrice)
+    })
+  });
+  setTableSeats("");
+  setTablePrice(""); // Тепер ціна столика очищається автоматично!
+  loadResources();
 }
 
 async function deleteBooking(id){
@@ -190,57 +181,57 @@ loadBookings();
 }
 
 async function updateBooking(id){
-
-await fetch(`${API}/booking/${id}`,{
-
-method:"PUT",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-
-client:editClient,
-date:editDate
-
-})
-
-});
-
-setEditingBooking(null);
-
-loadBookings();
-loadResources();
+  await fetch(`${API}/booking/${id}`,{
+    method:"PUT",
+    headers: { "Content-Type":"application/json" },
+    body:JSON.stringify({
+      client: editClient,
+      date: formatDateToBackend(editDate) // Конвертуємо перед збереженням
+    })
+  });
+  setEditingBooking(null);
+  loadBookings();
+  loadResources();
 }
-
 async function updateResource(id){
+  const priceNum = Number(editPrice);
+  
+  if (isNaN(priceNum) || priceNum <= 0) {
+    alert("Будь ласка, введіть коректну ціну (більшу за 0)");
+    return;
+  }
 
-await fetch(`${API}/resources/${id}`,{
+  if (editingIsTable) {
+    const seatsNum = Number(editSeats);
+    if (isNaN(seatsNum) || seatsNum <= 0 || !Number.isInteger(seatsNum)) {
+      alert("Будь ласка, введіть коректну кількість місць (ціле число більше за 0)");
+      return;
+    }
+  }
 
-method:"PUT",
+  const payload = editingIsTable 
+    ? { price: priceNum, seats: Number(editSeats) }
+    : { price: priceNum, type: Number(editType) };
 
-headers:{
-"Content-Type":"application/json"
-},
+  // Додано збереження відповіді для обробки помилок сервера
+  const response = await fetch(`${API}/resources/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
 
-body:JSON.stringify({
+  if (!response.ok) {
+    alert("Помилка оновлення ресурсу на сервері");
+    return;
+  }
 
-price:Number(editPrice),
-
-type:Number(editType),
-
-seats:Number(editSeats)
-
-})
-
-});
-
-setEditingResource(null);
-setEditingIsTable(false);
-setEditSeats("");
-setEditPrice("");
-loadResources();
+  setEditingResource(null);
+  setEditingIsTable(false);
+  setEditSeats("");
+  setEditPrice("");
+  loadResources();
 }
 
 const freeResources=
@@ -530,47 +521,35 @@ marginTop:"18px"
 }}>
 
 <button
-style={primaryButton}
-onClick={()=>{
+  style={primaryButton}
+  onClick={() => {
+    setEditingResource(x.id);
+    
+    // Безпечний парсинг ціни (якщо не знайшло — ставимо "0")
+    const priceMatch = x.info.match(/ціна=(\d+(\.\d+)?)/);
+    setEditPrice(priceMatch ? priceMatch[1] : "0");
 
-setEditingResource(x.id);
+    // Визначаємо тип кімнати
+    if (x.info.toLowerCase().includes("люкс")) {
+      setEditType(2);
+    } else {
+      setEditType(1);
+    }
 
-const priceMatch=
-x.info.match(/ціна=(\d+(\.\d+)?)/);
+    // Перевіряємо, чи це столик
+    const isTable = x.info.toLowerCase().includes("столик");
+    setEditingIsTable(isTable);
 
-if(priceMatch){
-setEditPrice(priceMatch[1]);
-}
-
-if(x.info.toLowerCase().includes("люкс")){
-setEditType(2);
-}
-else{
-setEditType(1);
-}
-
-setEditingIsTable(
-x.info.toLowerCase().includes("столик")
-);
-
-if(!x.info.toLowerCase().includes("столик")){
-setEditSeats("");
-}
-
-if(x.info.toLowerCase().includes("столик")){
-
-const match=
-x.info.match(/місця=(\d+)/);
-
-if(match){
-setEditSeats(match[1]);
-}
-
-}
-
-}}
+    // Безпечний парсинг місць для столика
+    if (isTable) {
+      const match = x.info.match(/місця=(\d+)/);
+      setEditSeats(match ? match[1] : "0");
+    } else {
+      setEditSeats(""); // Для кімнат залишаємо порожнім
+    }
+  }}
 >
-Edit
+  Edit
 </button>
 
 <button
@@ -654,30 +633,22 @@ Book Now
 <div style={formCard}>
 
 <select
-value={roomType}
-onChange={(e)=>
-setRoomType(e.target.value)
-}
-style={inputStyle}
+  value={roomType}
+  onChange={(e) => setRoomType(Number(e.target.value))} // Додано Number()
+  style={inputStyle}
 >
-
-<option value={1}>
-STANDARD
-</option>
-
-<option value={2}>
-LUX
-</option>
-
+  <option value={1}>STANDARD</option>
+  <option value={2}>LUX</option>
 </select>
 
 <input
-placeholder="Price"
-value={roomPrice}
-onChange={(e)=>
-setRoomPrice(e.target.value)
-}
-style={inputStyle}
+  type="number" // Захист від введення букв
+  min="0.01"
+  step="0.01"
+  placeholder="Price"
+  value={roomPrice}
+  onChange={(e)=> setRoomPrice(e.target.value)}
+  style={inputStyle}
 />
 
 <button
@@ -695,21 +666,23 @@ Add Room
 <div style={formCard}>
 
 <input
-placeholder="Seats"
-value={tableSeats}
-onChange={(e)=>
-setTableSeats(e.target.value)
-}
-style={inputStyle}
+  type="number" // Захист
+  min="1"
+  step="1"
+  placeholder="Seats"
+  value={tableSeats}
+  onChange={(e)=> setTableSeats(e.target.value)}
+  style={inputStyle}
 />
 
 <input
-placeholder="Price"
-value={tablePrice}
-onChange={(e)=>
-setTablePrice(e.target.value)
-}
-style={inputStyle}
+  type="number" // Захист
+  min="0.01"
+  step="0.01"
+  placeholder="Price"
+  value={tablePrice}
+  onChange={(e)=> setTablePrice(e.target.value)}
+  style={inputStyle}
 />
 
 <button
@@ -759,14 +732,10 @@ marginTop:"18px"
 
 <button
 style={primaryButton}
-onClick={()=>{
-
-setEditingBooking(x.bookingId);
-
-setEditClient(x.client);
-
-setEditDate(x.date);
-
+onClick={() => {
+  setEditingBooking(x.bookingId);
+  setEditClient(x.client);
+  setEditDate(formatDateToFrontend(x.date)); // Конвертуємо назад для інпута календаря
 }}
 >
 Edit
@@ -856,87 +825,64 @@ Cancel
 </div>
 )}
 
-{editingResource&&(
+{editingResource && (
+  <div style={modalOverlay}>
+    <div style={modalStyle}>
+      <h2>Edit Resource</h2>
 
-<div style={modalOverlay}>
+      {!editingIsTable && (
+        <select
+          value={editType}
+          onChange={(e) => setEditType(Number(e.target.value))}
+          style={inputStyle}
+        >
+          <option value={1}>STANDARD</option>
+          <option value={2}>LUX</option>
+        </select>
+      )}
 
-<div style={modalStyle}>
+      {editingIsTable && (
+        <input
+          type="number" // Захист на рівні браузера
+          min="1"
+          step="1"
+          placeholder="Seats"
+          value={editSeats}
+          onChange={(e) => setEditSeats(e.target.value)}
+          style={inputStyle}
+        />
+      )}
 
-<h2>Edit Resource</h2>
+      <input
+        type="number" // Захист на рівні браузера
+        min="0.01"
+        step="0.01"
+        placeholder="New Price"
+        value={editPrice}
+        onChange={(e) => setEditPrice(e.target.value)}
+        style={inputStyle}
+      />
 
-{!editingIsTable&&(
+      <div style={{ display: "flex", gap: "16px" }}>
+        <button
+          style={primaryButton}
+          onClick={() => updateResource(editingResource)}
+        >
+          Save
+        </button>
 
-<select
-value={editType}
-onChange={(e)=>
-setEditType(e.target.value)
-}
-style={inputStyle}
->
-
-<option value={1}>
-STANDARD
-</option>
-
-<option value={2}>
-LUX
-</option>
-
-</select>
-
-)}
-
-{editingIsTable&&(
-
-<input
-placeholder="Seats"
-value={editSeats}
-onChange={(e)=>
-setEditSeats(e.target.value)
-}
-style={inputStyle}
-/>
-
-)}
-
-<input
-placeholder="New Price"
-value={editPrice}
-onChange={(e)=>
-setEditPrice(e.target.value)
-}
-style={inputStyle}
-/>
-
-<div style={{
-display:"flex",
-gap:"16px"
-}}>
-
-<button
-style={primaryButton}
-onClick={()=>
-updateResource(editingResource)
-}
->
-Save
-</button>
-
-<button
-style={dangerButton}
-onClick={()=>{
-setEditingResource(null);
-setEditingIsTable(false);
-}}
->
-Cancel
-</button>
-
-</div>
-
-</div>
-
-</div>
+        <button
+          style={dangerButton}
+          onClick={() => {
+            setEditingResource(null);
+            setEditingIsTable(false);
+          }}
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
 )}
 
 </div>
