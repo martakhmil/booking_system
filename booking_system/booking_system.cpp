@@ -761,10 +761,10 @@ void runTests(){
 }
 
 void addCors(crow::response& res){
-    res.add_header("Access-Control-Allow-Origin","*");
-    res.add_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
-    res.add_header("Access-Control-Allow-Headers","Content-Type");
-    res.add_header("Access-Control-Max-Age", "3600");
+   res.set_header("Access-Control-Allow-Origin","*");
+    res.set_header("Access-Control-Allow-Methods","GET, POST, PUT, DELETE, OPTIONS");
+    res.set_header("Access-Control-Allow-Headers","Content-Type");
+   res.set_header("Access-Control-Max-Age", "3600");
 }
 
 int main(){
