@@ -1008,8 +1008,13 @@ CROW_ROUTE(app,"/add-room")
 });
 
 CROW_ROUTE(app,"/add-room")
-.methods("POST"_method)
-([&items](const crow::request& req){ // Змінено: nxtR більше не передаємо по посиланню
+.methods("OPTIONS"_method, "POST"_method)
+([&items](const crow::request& req){
+    if(req.method == crow::HTTPMethod::Options){
+        crow::response res(204);
+        addCors(res);
+        return res;
+    }
 
     auto body=crow::json::load(req.body);
     if(!body){
@@ -1027,7 +1032,6 @@ CROW_ROUTE(app,"/add-room")
         return res;
     }
 
-    // Динамічно вираховуємо новий унікальний ID на основі поточної пам'яті
     int currentNextId = 1;
     for(auto& x : items){
         currentNextId = max(currentNextId, x->getId() + 1);
@@ -1056,19 +1060,13 @@ CROW_ROUTE(app,"/add-room")
 });
 
 CROW_ROUTE(app,"/add-table")
-.methods("OPTIONS"_method)
-([](){
-
-    crow::response res(204);
-
-    addCors(res);
-
-    return res;
-});
-
-CROW_ROUTE(app,"/add-table")
-.methods("POST"_method)
-([&items](const crow::request& req){ // Змінено: nxtR прибрано
+.methods("OPTIONS"_method, "POST"_method)
+([&items](const crow::request& req){
+    if(req.method == crow::HTTPMethod::Options){
+        crow::response res(204);
+        addCors(res);
+        return res;
+    }
 
     auto body=crow::json::load(req.body);
     if(!body){
@@ -1086,7 +1084,6 @@ CROW_ROUTE(app,"/add-table")
         return res;
     }
 
-    // Динамічно вираховуємо новий унікальний ID
     int currentNextId = 1;
     for(auto& x : items){
         currentNextId = max(currentNextId, x->getId() + 1);
