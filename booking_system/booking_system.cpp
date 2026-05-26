@@ -998,7 +998,6 @@ return res;
     });
 
 
-// ==================== ТІЛЬКИ ЦЕЙ БЛОК ДЛЯ ROOM ====================
 CROW_ROUTE(app,"/add-room")
 .methods("OPTIONS"_method, "POST"_method)
 ([&items](const crow::request& req){
@@ -1051,7 +1050,6 @@ CROW_ROUTE(app,"/add-room")
     return res;
 });
 
-// ==================== ТІЛЬКИ ЦЕЙ БЛОК ДЛЯ TABLE ====================
 CROW_ROUTE(app,"/add-table")
 .methods("OPTIONS"_method, "POST"_method)
 ([&items](const crow::request& req){
