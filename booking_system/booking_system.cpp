@@ -844,7 +844,13 @@ for(auto x:allBookings){
 });
 
     CROW_ROUTE(app,"/resources")
-    ([&items,&sorter](){
+.methods("GET"_method,"OPTIONS"_method)
+([&items,&sorter](const crow::request& req){
+    if(req.method==crow::HTTPMethod::Options){
+        crow::response res(204);
+        addCors(res);
+        return res;
+    }
 
         sorter.sortItems(items);
 
@@ -874,7 +880,13 @@ return res;
     });
 
     CROW_ROUTE(app,"/bookings")
-    ([&](){
+.methods("GET"_method,"OPTIONS"_method)
+([&](const crow::request& req){
+    if(req.method==crow::HTTPMethod::Options){
+        crow::response res(204);
+        addCors(res);
+        return res;
+    }
 
         vector<Booking> all=
         SQLiteBookingRepository::
@@ -908,93 +920,53 @@ addCors(res);
 
 return res;
     });
-CROW_ROUTE(app,"/book")
-.methods("OPTIONS"_method)
-([](){
-    crow::response res;
-    addCors(res);
-    return res;
-});
-    CROW_ROUTE(app,"/book")
-    .methods("POST"_method)
 
+    CROW_ROUTE(app,"/book")
+    .methods("OPTIONS"_method,"POST"_method)
     ([&items,&service,&nxtB]
     (const crow::request& req){
 
-        auto body=
-        crow::json::load(req.body);
-
-        if(!body){
-
-             crow::response res(
-                400,
-                "invalid json"
-            );
+        if(req.method==crow::HTTPMethod::Options){
+            crow::response res(204);
             addCors(res);
-
-return res;
+            return res;
         }
 
-        int id=
-        body["id"].i();
+        auto body=crow::json::load(req.body);
+        if(!body){
+            crow::response res(400,"invalid json");
+            addCors(res);
+            return res;
+        }
 
-        string client=
-        body["client"].s();
+        int id=body["id"].i();
+        string client=body["client"].s();
+        string date=body["date"].s();
 
-        string date=
-        body["date"].s();
-
-        int idx=
-        findResIdx(items,id);
-
+        int idx=findResIdx(items,id);
         if(idx==-1){
-
-            crow::response res(
-                404,
-                "resource not found"
-            );
-           addCors(res); 
-
-return res;
+            crow::response res(404,"resource not found");
+            addCors(res);
+            return res;
         }
 
         if(!items[idx]->isFree()){
-
-            crow::response res(
-                400,
-                "resource busy"
-            );
-         addCors(res);  
-
-return res;
+            crow::response res(400,"resource busy");
+            addCors(res);
+            return res;
         }
 
         if(items[idx]->book(client,date)){
-
-            service.createBooking(
-                Booking( nxtB++,  id, client, date )
-            );
-
-            SQLiteBookingRepository::
-            getInstance()
-            .updateFree(id,0);
-
-            crow::response res(
-                200,
-                "success"
-            );
-           addCors(res);
-
-return res;
+            service.createBooking(Booking(nxtB++,id,client,date));
+            SQLiteBookingRepository::getInstance().updateFree(id,0);
+            crow::response res(200,"success");
+            addCors(res);
+            return res;
         }
 
-        crow::response res(
-            400,
-            "booking failed"
-        );
+        crow::response res(400,"booking failed");
         addCors(res);
-
-return res;
+        return res;
     });
 
 

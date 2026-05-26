@@ -201,6 +201,12 @@ loadResources();
 loadBookings();
 }
 
+async function deleteBooking(id){
+  await fetch(`${API}/booking/${id}`,{ method:"DELETE" });
+  loadBookings();
+  loadResources();
+}
+
 async function updateBooking(id){
   await fetch(`${API}/booking/${id}`,{
     method:"PUT",
